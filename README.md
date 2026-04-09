@@ -33,7 +33,7 @@ O projeto está organizado de uma forma que facilita a manutenção:
 * **Spring Boot**
 * **Maven** (Gerenciador de dependências)
 * **Lombok** (Para evitar código repetitivo)
-* **H2 Database** (Banco em memória para facilitar os testes de estudo)
+* **MySQL** 
 
 ---
 
