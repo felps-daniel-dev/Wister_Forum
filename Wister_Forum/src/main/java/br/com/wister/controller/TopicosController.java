@@ -9,6 +9,10 @@ import br.com.wister.database.repository.TopicoRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -28,10 +32,19 @@ public class TopicosController {
     private CursoRepository cursoRepository;
 
     @GetMapping
-    public List<TopicoDTO> lista(String filtro) {
-        List<Topico> topicos;
-        if (filtro == null) topicos = topicoRepository.findAll();
-        else topicos = topicoRepository.findByCursoNome(filtro);
+    public Page<TopicoDTO> lista(@RequestParam(required = false) String nomeCurso,
+                                 Pageable paginacao) {
+        //posso deixar como padrao para retornar quando não hover filtros(é usado apenas quando nao se rcebe filtro)
+        // @PageableDefault(sort = "id". direction = Direction.ASC), page =0, size = 10
+
+        // vai receber por parametro um paginacao ai la na requisiçao vai mandar dessa forma: localhost:8080/topicos?page=0&size=10&sort=id,asc&sort=dataCriacao,desc
+        // e deve ter na main a anotaçao @EnableSpringDataWebSupport
+        Page<Topico> topicos;
+        if (nomeCurso == null) {
+            topicos = topicoRepository.findAll(paginacao);
+        } else {
+            topicos = topicoRepository.findByCursoNome(nomeCurso, paginacao);
+        }
 
         return TopicoDTO.converter(topicos);
     }
