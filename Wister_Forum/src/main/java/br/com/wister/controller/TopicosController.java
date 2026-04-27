@@ -9,6 +9,8 @@ import br.com.wister.database.repository.TopicoRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +34,10 @@ public class TopicosController {
     private CursoRepository cursoRepository;
 
     @GetMapping
+    @Cacheable(value = "listaDeTopicos")  // vai guardar oretorno do metodo em cache ddepois da primeira requisição
+                                          // ele guarda o retorno no cache entao se eu fizer outra requisicao do mesmo
+                                          // metodoele nao vai novamente no banco ele vai apenas pegar da memoria
+                                          // pra cada variacao de parametro ele faz uma requisição
     public Page<TopicoDTO> lista(@RequestParam(required = false) String nomeCurso,
                                  Pageable paginacao) {
         //posso deixar como padrao para retornar quando não hover filtros(é usado apenas quando nao se rcebe filtro)
@@ -61,6 +67,7 @@ public class TopicosController {
 
     @PostMapping
     @Transactional
+    @CacheEvict(value = "listaDeTopicos", allEntries = true)   // vai atualizar o cache que foi feito a requisição sendo usada apenas nos metodos que alteram registros emcache
     public ResponseEntity<TopicoDTO> cadastrar(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBilder) {
         Topico topico = form.converter(cursoRepository);
         topicoRepository.save(topico);
@@ -71,6 +78,7 @@ public class TopicosController {
 
     @PutMapping("/{id}")
     @Transactional
+    @CacheEvict(value = "listaDeTopicos", allEntries = true)
     public ResponseEntity<TopicoDTO> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizacaoTopicoForm form) {
         Optional<Topico> optional = topicoRepository.findById(id);
         if (optional.isPresent()) {
@@ -83,6 +91,7 @@ public class TopicosController {
 
     @DeleteMapping("/{id}")
     @Transactional
+    @CacheEvict(value = "listaDeTopicos", allEntries = true)
     public ResponseEntity remover(@PathVariable Long id) {
         Optional<Topico> optional = topicoRepository.findById(id);
         if (optional.isPresent()) {
